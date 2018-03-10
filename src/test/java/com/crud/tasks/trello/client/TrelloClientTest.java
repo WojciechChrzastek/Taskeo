@@ -16,11 +16,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,6 +40,7 @@ public class TrelloClientTest {
         when(trelloConfig.getTrelloApiEndpoint()).thenReturn("http://test.com");
         when(trelloConfig.getTrelloAppKey()).thenReturn("test");
         when(trelloConfig.getTrelloToken()).thenReturn("test");
+        when(trelloConfig.getTrelloUsername()).thenReturn("test");
     }
 
     @Test
@@ -48,9 +49,7 @@ public class TrelloClientTest {
         TrelloBoardDto[] trelloBoards = new TrelloBoardDto[1];
         trelloBoards[0] = new TrelloBoardDto("test_id", "test_board", new ArrayList<>());
 
-        //URI uri = new URI("http://test.com/members/wojciechchrzastek/boards?key=test&token=test&fields=name,id&lists=all");
-
-        //String url = "http://test.com/members/wojciechchrzastek/boards?key=test&token=test&fields=name,id&lists=all";
+        URI uri = new URI("http://test.com/members/wojciechchrzastek/boards?key=test&token=test&fields=name,id&lists=all");
 
         URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/members/" + trelloConfig.getTrelloUsername() + "/boards")
                 .queryParam("key", trelloConfig.getTrelloAppKey())
@@ -59,7 +58,7 @@ public class TrelloClientTest {
                 .queryParam("fields", "name,id")
                 .queryParam("lists", "all").build().encode().toUri();
 
-        when(restTemplate.getForObject(url, TrelloBoardDto[].class)).thenReturn(trelloBoards);
+        when(restTemplate.getForObject(uri, TrelloBoardDto[].class)).thenReturn(trelloBoards);
 
         //When
         List<TrelloBoardDto> fetchedTrelloBoards = trelloClient.getTrelloBoards();
@@ -81,9 +80,7 @@ public class TrelloClientTest {
                 "testId"
         );
 
-        //URI uri = new URI("http://test.com/cards?key=test&token=test&name=Test%20task&desc=Test%20Description&pos=top&idList=test_id");
-
-        //String url = "http://test.com/cards?key=test&token=test&name=Test%20task&desc=Test%20Description&pos=top&idList=test_id";
+        URI uri = new URI("http://test.com/cards?key=test&token=test&name=Test%20task&desc=Test%20Description&pos=top&idList=test_id");
 
         URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/cards")
                 .queryParam("key", trelloConfig.getTrelloAppKey())
@@ -99,7 +96,7 @@ public class TrelloClientTest {
                 "http://test.com"
         );
 
-        when(restTemplate.postForObject(url, null, CreatedTrelloCard.class)).thenReturn(createdTrelloCard);
+        when(restTemplate.postForObject(uri, null, CreatedTrelloCard.class)).thenReturn(createdTrelloCard);
 
         //When
         CreatedTrelloCard newCard = trelloClient.createNewCard(trelloCardDto);
@@ -114,22 +111,15 @@ public class TrelloClientTest {
     public void shouldReturnEmptyList() throws URISyntaxException {
         //Given
 
-        //TrelloBoardDto[] trelloBoards = new TrelloBoardDto[1];
-        //trelloBoards[0] = new TrelloBoardDto("test_id", "test_board", new ArrayList<>());
+        TrelloBoardDto[] trelloBoards = new TrelloBoardDto[1];
+        trelloBoards[0] = new TrelloBoardDto("test_id", "test_board", new ArrayList<>());
 
-       // try {
-       //     TrelloBoardDto[] boardsResponse = restTemplate.getForObject(url, TrelloBoardDto[].class);
-       //     return Arrays.asList(ofNullable(boardsResponse).orElse(new TrelloBoardDto[0]));
-       // }
-
-        String url = "url";
-
-        //URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/members/" + trelloConfig.getTrelloUsername() + "/boards")
-        //        .queryParam("key", trelloConfig.getTrelloAppKey())
-        //        .queryParam("token", trelloConfig.getTrelloToken())
-        //        .queryParam("username", trelloConfig.getTrelloUsername())
-        //        .queryParam("fields", "name,id")
-        //        .queryParam("lists", "all").build().encode().toUri();
+        URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/members/" + trelloConfig.getTrelloUsername() + "/boards")
+                .queryParam("key", trelloConfig.getTrelloAppKey())
+                .queryParam("token", trelloConfig.getTrelloToken())
+                .queryParam("username", trelloConfig.getTrelloUsername())
+                .queryParam("fields", "name,id")
+                .queryParam("lists", "all").build().encode().toUri();
 
         when(restTemplate.getForObject(url, TrelloBoardDto[].class)).thenReturn(new TrelloBoardDto[0]);
 
@@ -138,5 +128,7 @@ public class TrelloClientTest {
 
         //Then
         assertEquals(0, emptyList.size());
+
+        verify(restTemplate, times(1)).getForObject(url, TrelloBoardDto[].class);
     }
 }
