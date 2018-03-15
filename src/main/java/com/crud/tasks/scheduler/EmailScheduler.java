@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 public class EmailScheduler {
 
     private static final String SUBJECT = "Tasks: Once a day email";
+    private static final String ONE_TASK = " task";
+    private static final String MULTIPLE_TASKS = " tasks";
 
     @Autowired
     private SimpleEmailService simpleEmailService;
@@ -22,14 +24,22 @@ public class EmailScheduler {
     @Autowired
     private AdminConfig adminConfig;
 
+    private String oneTaskOrManyTasksValidator(long tasksCount) {
+        if (tasksCount != 1) {
+            return MULTIPLE_TASKS;
+        }
+        return ONE_TASK;
+    }
+
     @Scheduled(cron = "0 0 10 * * *")
     public void sendInformationEmail() {
-        long size = taskRepository.count();
+        long tasksCount = taskRepository.count();
+        String oneTaskOrManyTasks = oneTaskOrManyTasksValidator(tasksCount);
         simpleEmailService.send(new Mail(
                 adminConfig.getAdminMail(),
                 SUBJECT,
-                "Currently in database you got: " + size + " tasks",
-                null)
-        );
+                "Currently in database you got: " + tasksCount + oneTaskOrManyTasks,
+                null));
     }
 }
+
