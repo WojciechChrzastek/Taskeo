@@ -24,7 +24,7 @@ public class EmailScheduler {
     @Autowired
     private AdminConfig adminConfig;
 
-    private String oneTaskOrManyTasksValidator(long tasksCount) {
+    private String returnTaskOrTasksString(long tasksCount) {
         if (tasksCount != 1) {
             return MULTIPLE_TASKS;
         }
@@ -34,12 +34,11 @@ public class EmailScheduler {
     @Scheduled(cron = "0 0 10 * * *")
     public void sendInformationEmail() {
         long tasksCount = taskRepository.count();
-        String oneTaskOrManyTasks = oneTaskOrManyTasksValidator(tasksCount);
+        String taskOrTasksString = returnTaskOrTasksString(tasksCount);
         simpleEmailService.send(new Mail(
                 adminConfig.getAdminMail(),
                 SUBJECT,
-                "Currently in database you got: " + tasksCount + oneTaskOrManyTasks,
+                "Currently in database you got: " + tasksCount + taskOrTasksString,
                 null));
     }
 }
-
