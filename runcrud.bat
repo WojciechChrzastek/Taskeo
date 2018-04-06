@@ -6,9 +6,7 @@ goto fail
 
 :rename
 del build\libs\crud.war
-echo blabla
-ren  build\libs\tasks-0.0.1-SNAPSHOT.war crud.war
-echo dupa
+ren build\libs\tasks-0.0.1-SNAPSHOT.war crud.war
 if "%ERRORLEVEL%" == "0" goto stoptomcat
 echo Cannot rename file
 goto fail
